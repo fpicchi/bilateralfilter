@@ -32,8 +32,8 @@ void bf_parallel_k(const uchar*  const source,
                  const double* const gs,
                  const int*    const space_coord,
                  const int           maxk,
-                 const size_t        width,
-                 const size_t        height,
+                 const int           width,
+                 const int           height,
                  const size_t        s_step,
                  const size_t        d_step) {
     // Shared memory setup
@@ -44,8 +44,8 @@ void bf_parallel_k(const uchar*  const source,
     uchar*  const tile_s = (uchar*)&space_coord_s[diameter * diameter];
     // Ids and vals setup
     const int radius = diameter / 2;
-    const int global_j = (int)(threadIdx.x + blockIdx.x * blockDim.x) - radius * (1 + 2 * blockIdx.x);
-    const int global_i = (int)(threadIdx.y + blockIdx.y * blockDim.y) - radius * (1 + 2 * blockIdx.y);
+    const int global_j = (int)(threadIdx.x + blockIdx.x * blockDim.x) - radius * (int)(1 + 2 * blockIdx.x);
+    const int global_i = (int)(threadIdx.y + blockIdx.y * blockDim.y) - radius * (int)(1 + 2 * blockIdx.y);
     const int sharedId = threadIdx.y * blockDim.x + threadIdx.x;
     // Copy from global memory to shared memory
     if (sharedId < 256)
@@ -146,8 +146,8 @@ cv::Mat bf_parallel(const cv::Mat &source,
     
     // Filtering process
     bf_parallel_k << < gridSize_2D, blockSize_2D, bytesNeeded >> > (temp_d, dst_d, diameter, gi_d, gs_d,
-                                                space_coord_d, maxk, source.cols,
-                                                source.rows, temp.step, dst.step);
+                                                space_coord_d, maxk, (int)source.cols,
+                                                (int)source.rows, temp.step, dst.step);
 
     handleError(cudaDeviceSynchronize(), __LINE__);
     

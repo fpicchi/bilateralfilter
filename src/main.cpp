@@ -154,18 +154,17 @@ int main()
         auto cols = bf_sequential_mat.cols;
         dist = cv::norm(bf_parallel_cv_mat, bf_sequential_cv_mat, cv::NORM_L2) 
             / static_cast<double>(rows * cols);
-        //if (dist > 0.001) equals = false;
+        if (dist > 0.001) equals = false;
         dist = cv::norm(bf_sequential_cv_mat, bf_sequential_mat, cv::NORM_L2)
             / static_cast<double>(rows * cols);
-        //if (dist > 0.001) equals = false;
+        if (dist > 0.001) equals = false;
         dist = cv::norm(bf_parallel_omp_mat, bf_sequential_mat, cv::NORM_L2)
             / static_cast<double>(rows * cols);
-        //if (dist > 0.001) equals = false;
+        if (dist > 0.001) equals = false;
 #if CHECK_PARALLEL
         cv::Mat temp;
         cv::bitwise_xor(bf_parallel_mat, bf_sequential_mat, temp);
         if (cv::countNonZero(temp) > 0) equals = false;
-        //std::cout << temp << "\n";
 #endif
         std::cout << (equals ? "CHECK: OK" : "CHECK: FAILED") << std::endl;
     }
@@ -189,6 +188,8 @@ int main()
         elapsed_bf_sequential_cv_vec, elapsed_bf_parallel_cv_vec);
     print_speedup("|Sequential        / Sequential OpenCV|", 
         elapsed_bf_sequential_vec, elapsed_bf_sequential_cv_vec);
+    print_speedup("|Sequential        / Sequential OMP   |",
+        elapsed_bf_sequential_vec, elapsed_bf_parallel_omp_vec);
 #if SPEEDUP_PARALLEL
 #if USE_PARALLEL_NAIVE
     print_speedup("|Sequential        / Parallel (Naive) |",
@@ -197,9 +198,11 @@ int main()
     print_speedup("|Sequential        / Parallel         |", 
         elapsed_bf_sequential_vec, elapsed_bf_parallel_vec);
 #endif
-    print_speedup("|Sequential (OpenCV) / Parallel         |", 
+    print_speedup("|Sequential OpenCV / Parallel         |", 
         elapsed_bf_sequential_cv_vec, elapsed_bf_parallel_vec);
-    print_speedup("|Parallel (OpenCV)   / Parallel         |", 
+    print_speedup("|Parallel OpenCV   / Parallel         |", 
         elapsed_bf_parallel_cv_vec, elapsed_bf_parallel_vec);
+    print_speedup("|Parallel OMP      / Parallel         |",
+        elapsed_bf_parallel_omp_vec, elapsed_bf_parallel_vec);
 #endif
 }
