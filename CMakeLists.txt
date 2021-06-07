@@ -221,6 +221,7 @@ set(CXX_SOURCE_FILES
     src/bilateral_filter/bf_sequential.cpp
     src/bilateral_filter/bf_sequential_cv.cpp
     src/bilateral_filter/bf_parallel_cv.cpp
+    src/bilateral_filter/bf_parallel_omp.cpp
 )
 
 set(CUDA_SOURCE_FILES

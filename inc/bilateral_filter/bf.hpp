@@ -26,3 +26,6 @@ cv::Mat bf_parallel_naive(const cv::Mat &source,
 
 cv::Mat bf_parallel_cv(const cv::Mat &source, 
     int diameter, double sigma_i, double sigma_s);
+
+cv::Mat bf_parallel_omp(const cv::Mat &source,
+    int diameter, double sigma_i, double sigma_s);
