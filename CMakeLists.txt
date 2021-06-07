@@ -68,19 +68,28 @@ else(OpenCV_CUDA_VERSION)
 endif()
 
 # ------------------------------------------------------------------------------
+# OpenMP
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+    set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} ${OpenMP_CUDA_FLAGS}")
+endif()
+# ------------------------------------------------------------------------------
 # Set the C++ compiler options.
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O1")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fomit-frame-pointer")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-builtin")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-stack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror")
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=i686")
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wpedantic")
 # set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic-errors")
@@ -138,9 +147,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-builtin")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-stack-protector")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=i686")
+# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 # set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m32")
-# set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c++14")
 # set(CMAKE_C_FLAGS"${CMAKE_C_FLAGS} -Wall")
 # set(CMAKE_C_FLAGS"${CMAKE_C_FLAGS} -Wpedantic")
 # set(CMAKE_C_FLAGS"${CMAKE_C_FLAGS} -pedantic-errors")
@@ -197,6 +205,7 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -gencode=arch=compute_${CC},code=sm_${
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O2")
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -O3")
 # set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -w")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -lineinfo")
 set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++14")
 
 # ------------------------------------------------------------------------------
@@ -216,6 +225,7 @@ set(CXX_SOURCE_FILES
 
 set(CUDA_SOURCE_FILES
     src/bilateral_filter/bf_parallel.cu
+    src/bilateral_filter/bf_parallel_naive.cu
 )
 
 # ------------------------------------------------------------------------------

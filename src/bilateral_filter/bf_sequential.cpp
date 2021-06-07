@@ -9,7 +9,6 @@
  */
 
 #include "bilateral_filter/bf.hpp"
-#include <iostream>
 
 void bf_sequential_apply(const cv::Mat &temp, const cv::Mat &dst, int radius,
     int i, int j, double *gi, double *gs, int *space_coord, int maxk)
@@ -30,27 +29,28 @@ void bf_sequential_apply(const cv::Mat &temp, const cv::Mat &dst, int radius,
     dptr[j] = (uchar)std::round(sum / wsum);
 }
 
-cv::Mat bf_sequential(const cv::Mat &src, int ksize, 
+cv::Mat bf_sequential(const cv::Mat &source, int diameter,
     double sigma_i, double sigma_s)
 {
-    cv::Mat dst = cv::Mat::zeros(src.rows, src.cols, CV_8U);
-    int radius = ksize / 2;
+    cv::Mat dst = cv::Mat::zeros(source.rows, source.cols, CV_8U);
+    int radius = diameter / 2;
 
     // Create an image with a border.
     cv::Mat temp;
-    cv::copyMakeBorder(src, temp, radius, radius, radius, radius, 
+    cv::copyMakeBorder(source, temp, radius, radius, radius, radius,
         cv::BorderTypes::BORDER_REFLECT_101);
 
     // Init color weight.
     double coeff_i = -0.5 / (sigma_i * sigma_i);
     std::vector<double> gi_vec(256);
     double *gi = &gi_vec[0];
+
     for (int i = 0; i < 256; i++)
         gi[i] = exp(i * i * coeff_i);
 
     // Generate gaussian space.
-    std::vector<double> gs_vec(ksize * ksize);
-    std::vector<int> space_coord_vec(ksize * ksize); //< Save here coord.
+    std::vector<double> gs_vec(diameter * diameter);
+    std::vector<int> space_coord_vec(diameter * diameter);
     double *gs = &gs_vec[0];
     int    *space_coord = &space_coord_vec[0];
     double coeff_s = -0.5 / (sigma_s * sigma_s);
@@ -68,10 +68,9 @@ cv::Mat bf_sequential(const cv::Mat &src, int ksize,
     }
 
     // Filtering process
-    std::cout << "STEP: " << temp.step << "\n";
-    for (int i = 0; i < src.rows; i++)
+    for (int i = 0; i < source.rows; i++)
     {
-        for (int j = 0; j < src.cols; j++)
+        for (int j = 0; j < source.cols; j++)
         {
             bf_sequential_apply(temp, dst, radius, i, j, gi, gs, space_coord, 
                 maxk);

@@ -25,9 +25,9 @@ inline void handleError(cudaError_t err, int line) {
 }
 
 __global__
-void bf_parallel_k(const uchar*  const source, 
+void bf_parallel_naive_k(const uchar*  const source, 
                        uchar*  const destination, 
-                 const int           diameter,
+                 const int           radius,
                  const double* const gi,
                  const double* const gs,
                  const int*    const space_coord,
@@ -36,79 +36,43 @@ void bf_parallel_k(const uchar*  const source,
                  const size_t        height,
                  const size_t        s_step,
                  const size_t        d_step) {
-    // Shared memory setup
-    extern __shared__ double shared[];
-    double* const gi_s = (double*)shared;
-    double* const gs_s = gi_s + 256;
-    int*    const space_coord_s = (int*)&gs_s[diameter * diameter];
-    uchar*  const tile_s = (uchar*)&space_coord_s[diameter * diameter];
-    // Ids and vals setup
-    const int radius = diameter / 2;
-    const int global_j = (int)(threadIdx.x + blockIdx.x * blockDim.x) - radius * (1 + 2 * blockIdx.x);
-    const int global_i = (int)(threadIdx.y + blockIdx.y * blockDim.y) - radius * (1 + 2 * blockIdx.y);
-    const int sharedId = threadIdx.y * blockDim.x + threadIdx.x;
-    // Copy from global memory to shared memory
-    if (sharedId < 256)
-        gi_s[sharedId] = gi[sharedId];
-    if (sharedId < diameter * diameter) {
-        space_coord_s[sharedId] = space_coord[sharedId];
-        gs_s[sharedId] = gs[sharedId];
-    }
-    if (global_i >= height + radius || global_j >= width + radius) return;
-    tile_s[sharedId] = source[(global_i + radius) * s_step + radius + global_j];
+    const int global_j = threadIdx.x + blockIdx.x * blockDim.x;
+    const int global_i = threadIdx.y + blockIdx.y * blockDim.y;
     if (global_i >= height || global_j >= width) return;
-    if (threadIdx.x < radius || threadIdx.x >= blockDim.x - radius || 
-        threadIdx.y < radius || threadIdx.y >= blockDim.y - radius)
-        return;
-    __syncthreads();
+    const uchar* const sptr = source + (global_i + radius) * s_step + radius;
+    uchar* const dptr = destination + global_i * d_step;
 
-    // Calc new pixel value
     double sum = 0, wsum = 0;
-    const int val0 = tile_s[sharedId]; //< Center of the template.
+    const int val0 = sptr[global_j]; //< Center of the template.
     for (int k = 0; k < maxk; k++)
     {
-        const int val = tile_s[sharedId + space_coord_s[k]];
+        const int val = sptr[global_j + space_coord[k]];
         // The weight is gaussian space * color space.
-        const double w = gs_s[k] * gi_s[abs(val - val0)];
+        const double w = gs[k] * gi[abs(val - val0)];
         sum += val * w;
         wsum += w;
     }
-    destination[global_j + global_i * d_step] = (uchar)lround(sum / wsum);
+    dptr[global_j] = (uchar)lround(sum / wsum);
 }
 
-inline size_t calcBytesNeeded(const int blockSize, const int diameter) {
-    return (size_t)blockSize + 256 * sizeof(double) + diameter * diameter * (sizeof(int) + sizeof(double));
-}
-
-cv::Mat bf_parallel(const cv::Mat &source, 
+cv::Mat bf_parallel_naive(const cv::Mat &source, 
     const int diameter, const double sigma_i, const double sigma_s)
 {
-    const int radius = diameter / 2;
-    //Calculate optimal CUDA configuration
-    int blockSize = 1024;
-    int minGridSize;
-    size_t bytesNeeded = calcBytesNeeded(blockSize, diameter);
-    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize,
-                                       bf_parallel_k, bytesNeeded, 0);
-    // Recalc SM bytes needed
-    bytesNeeded = calcBytesNeeded(blockSize, diameter);
-    // Round up according to matrix size
-    blockSize = (int)sqrt(blockSize);
-    dim3 blockSize_2D(blockSize, blockSize);
-    blockSize -= 2*radius;
-    dim3 gridSize_2D((source.cols + blockSize - 1) / blockSize, (source.rows + blockSize - 1) / blockSize);
-    // Create destination matrix
     cv::Mat dst = cv::Mat::zeros(source.rows, source.cols, CV_8U);
+    int radius = diameter / 2;
+
     // Create an image with a border.
     cv::Mat temp;
     cv::copyMakeBorder(source, temp, radius, radius, radius, radius,
         cv::BorderTypes::BORDER_REFLECT_101);
+
     // Init color weight.
     double coeff_i = -0.5 / (sigma_i * sigma_i);
     std::vector<double> gi_vec(256);
     double *gi = &gi_vec[0];
     for (int i = 0; i < 256; i++)
         gi[i] = exp(i * i * coeff_i);
+
     // Generate gaussian space.
     std::vector<double> gs_vec(diameter * diameter);
     std::vector<int> space_coord_vec(diameter * diameter); //< Save here coord.
@@ -124,9 +88,10 @@ cv::Mat bf_parallel(const cv::Mat &source,
             if (r > radius) //< Circle.
                 continue;
             gs[maxk] = exp(r * r * coeff_s);
-            space_coord[maxk++] = i * (int)blockSize_2D.x + j;
+            space_coord[maxk++] = i * (int)temp.step + j;
         }
     }
+
     // Copy data to device
     uchar* temp_d;
     handleError(cudaMalloc(&temp_d, temp.total()), __LINE__);
@@ -143,14 +108,21 @@ cv::Mat bf_parallel(const cv::Mat &source,
     int* space_coord_d;
     handleError(cudaMalloc(&space_coord_d, diameter * diameter * sizeof(int)), __LINE__);
     handleError(cudaMemcpy(space_coord_d, space_coord, diameter * diameter * sizeof(int), cudaMemcpyHostToDevice), __LINE__);
-    
+    //Calculate optimal CUDA configuration
+    int blockSize;
+    int minGridSize;
+    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSize,
+                                        bf_parallel_naive_k, 0, 0);
+    // Round up according to matrix size 
+    blockSize = (int)sqrt(blockSize);
+    dim3 gridSize_2D((source.cols + blockSize - 1) / blockSize, (source.rows + blockSize - 1) / blockSize);
+    dim3 blockSize_2D(blockSize, blockSize);
     // Filtering process
-    bf_parallel_k << < gridSize_2D, blockSize_2D, bytesNeeded >> > (temp_d, dst_d, diameter, gi_d, gs_d,
+    bf_parallel_naive_k << < gridSize_2D, blockSize_2D >> > (temp_d, dst_d, radius, gi_d, gs_d,
                                                 space_coord_d, maxk, source.cols,
                                                 source.rows, temp.step, dst.step);
 
     handleError(cudaDeviceSynchronize(), __LINE__);
-    
     // Copy data from device
     handleError(cudaMemcpy(dst.data, dst_d, dst.total(), cudaMemcpyDeviceToHost), __LINE__);
     handleError(cudaFree(temp_d), __LINE__);
