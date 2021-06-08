@@ -1,7 +1,7 @@
 /**
- * @file bf_parallel.cu
+ * @file bf_parallel_naive.cu
  * @author Federico Picchi
- * @brief CUDA-based implementation of Bilateral Filter
+ * @brief CUDA-based implementation of Bilateral Filter. Naive version.
  * @date June 2021
  * 
  * @copyright Copyright (c) 2021

@@ -1,7 +1,7 @@
 /**
  * @file bf_sequential.cpp
  * @author Mirco De Marchi, Federico Picchi
- * @brief CPU-based parallel implementation of Bilateral filter
+ * @brief CPU-based parallel implementation of Bilateral filter. Uses OMP
  * @date June 2021
  * 
  * @copyright Copyright (c) 2021
