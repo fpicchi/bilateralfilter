@@ -15,7 +15,7 @@
 cv::Mat bf_sequential(const cv::Mat &source, 
     int diameter, double sigma_i, double sigma_s);
 
-cv::Mat bf_sequential_cv(const cv::Mat &source, 
+cv::Mat bf_cpu_cv(const cv::Mat &source, 
     int diameter, double sigma_i, double sigma_s);
 
 cv::Mat bf_parallel(const cv::Mat &source, 
@@ -24,7 +24,7 @@ cv::Mat bf_parallel(const cv::Mat &source,
 cv::Mat bf_parallel_naive(const cv::Mat &source,
     int diameter, double sigma_i, double sigma_s);
 
-cv::Mat bf_parallel_cv(const cv::Mat &source, 
+cv::Mat bf_cuda_cv(const cv::Mat &source, 
     int diameter, double sigma_i, double sigma_s);
 
 cv::Mat bf_parallel_omp(const cv::Mat &source,

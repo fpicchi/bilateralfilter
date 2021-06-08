@@ -119,32 +119,32 @@ int main()
             elapsed_bf_sequential_vec);
         cv::imwrite(out_bf_sequential_fp.string(), bf_sequential_mat);
 
-        // Bilateral Filter Sequential OpenCV
-        auto bf_sequential_cv_mat = test("Bilateral Filter Sequential (OpenCV)", 
-            entry.path(), input_mat, bf_sequential_cv, 
+        // Bilateral Filte OpenCV
+        auto bf_sequential_cv_mat = test("Bilateral Filter OpenCV", 
+            entry.path(), input_mat, bf_cpu_cv, 
             elapsed_bf_sequential_cv_vec);
         cv::imwrite(out_bf_sequential_cv_fp.string(), bf_sequential_cv_mat);
 
-        // Bilateral Filter Parallel CPU
-        auto bf_parallel_omp_mat = test("Bilateral Filter Parallel (OMP)",
+        // Bilateral Filter OMP
+        auto bf_parallel_omp_mat = test("Bilateral Filter OMP",
             entry.path(), input_mat, bf_parallel_omp,
             elapsed_bf_parallel_omp_vec);
         cv::imwrite(out_bf_parallel_omp_fp.string(), bf_parallel_omp_mat);
 
-        // Bilateral Filter Parallel
+        // Bilateral Filter CUDA
 #if USE_PARALLEL_NAIVE
-        auto bf_parallel_mat = test("Bilateral Filter Parallel (Naive)",
+        auto bf_parallel_mat = test("Bilateral Filter CUDA (Naive)",
             entry.path(), input_mat, bf_parallel_naive, elapsed_bf_parallel_vec);
         cv::imwrite(out_bf_parallel_fp.string(), bf_parallel_mat);
 #else
-        auto bf_parallel_mat = test("Bilateral Filter Parallel",
+        auto bf_parallel_mat = test("Bilateral Filter CUDA",
             entry.path(), input_mat, bf_parallel, elapsed_bf_parallel_vec);
         cv::imwrite(out_bf_parallel_fp.string(), bf_parallel_mat);
 #endif
         
-        // Bilateral Filter Parallel OpenCV
-        auto bf_parallel_cv_mat = test("Bilateral Filter Parallel (OpenCV)", 
-            entry.path(), input_mat, bf_parallel_cv, 
+        // Bilateral Filter CUDA OpenCV
+        auto bf_parallel_cv_mat = test("Bilateral Filter CUDA OpenCV", 
+            entry.path(), input_mat, bf_cuda_cv, 
             elapsed_bf_parallel_cv_vec);
         cv::imwrite(out_bf_parallel_cv_fp.string(), bf_parallel_cv_mat);
 
@@ -161,48 +161,52 @@ int main()
         dist = cv::norm(bf_parallel_omp_mat, bf_sequential_mat, cv::NORM_L2)
             / static_cast<double>(rows * cols);
         if (dist > 0.001) equals = false;
-#if CHECK_PARALLEL
         cv::Mat temp;
         cv::bitwise_xor(bf_parallel_mat, bf_sequential_mat, temp);
         if (cv::countNonZero(temp) > 0) equals = false;
-#endif
         std::cout << (equals ? "CHECK: OK" : "CHECK: FAILED") << std::endl;
     }
 
     std::cout << "\n-- Average analysis: " << std::endl;
     print_stats("Bilateral Filter Sequential", elapsed_bf_sequential_vec);
-    print_stats("Bilateral Filter Sequential (OpenCV)",
+    print_stats("Bilateral Filter OpenCV",
         elapsed_bf_sequential_cv_vec);
 #if USE_PARALLEL_NAIVE
-    print_stats("Bilateral Filter Parallel (Naive)", elapsed_bf_parallel_vec);
+    print_stats("Bilateral Filter CUDA (Naive)", elapsed_bf_parallel_vec);
 #else
-    print_stats("Bilateral Filter Parallel", elapsed_bf_parallel_vec);
+    print_stats("Bilateral Filter CUDA", elapsed_bf_parallel_vec);
 #endif
-    print_stats("Bilateral Filter Parallel (OpenCV)", elapsed_bf_parallel_cv_vec);
-    print_stats("Bilateral Filter Parallel (OMP)", elapsed_bf_parallel_omp_vec);
+    print_stats("Bilateral Filter CUDA OpenCV", elapsed_bf_parallel_cv_vec);
+    print_stats("Bilateral Filter OMP", elapsed_bf_parallel_omp_vec);
 
     std::cout << "\n-- Speedup analysis: " << std::endl;
-    print_speedup("|Sequential        / Parallel OpenCV  |", 
+    print_speedup("| Sequential        / CUDA OpenCV     |", 
         elapsed_bf_sequential_vec, elapsed_bf_parallel_cv_vec);
-    print_speedup("|Sequential OpenCV / Parallel OpenCV  |", 
+    print_speedup("| OpenCV            / CUDA OpenCV     |", 
         elapsed_bf_sequential_cv_vec, elapsed_bf_parallel_cv_vec);
-    print_speedup("|Sequential        / Sequential OpenCV|", 
+    print_speedup("| Sequential        / OpenCV          |", 
         elapsed_bf_sequential_vec, elapsed_bf_sequential_cv_vec);
-    print_speedup("|Sequential        / Sequential OMP   |",
+    print_speedup("| Sequential        / OMP             |",
         elapsed_bf_sequential_vec, elapsed_bf_parallel_omp_vec);
 #if SPEEDUP_PARALLEL
 #if USE_PARALLEL_NAIVE
-    print_speedup("|Sequential        / Parallel (Naive) |",
+    print_speedup("| Sequential        / CUDA (Naive)    |",
         elapsed_bf_sequential_vec, elapsed_bf_parallel_vec);
-#else
-    print_speedup("|Sequential        / Parallel         |", 
-        elapsed_bf_sequential_vec, elapsed_bf_parallel_vec);
-#endif
-    print_speedup("|Sequential OpenCV / Parallel         |", 
+    print_speedup("| OpenCV            / CUDA (Naive)    |",
         elapsed_bf_sequential_cv_vec, elapsed_bf_parallel_vec);
-    print_speedup("|Parallel OpenCV   / Parallel         |", 
+    print_speedup("| CUDA OpenCV       / CUDA (Naive)    |",
         elapsed_bf_parallel_cv_vec, elapsed_bf_parallel_vec);
-    print_speedup("|Parallel OMP      / Parallel         |",
+    print_speedup("| OMP               / CUDA (Naive)    |",
         elapsed_bf_parallel_omp_vec, elapsed_bf_parallel_vec);
+#else
+    print_speedup("| Sequential        / CUDA            |", 
+        elapsed_bf_sequential_vec, elapsed_bf_parallel_vec);
+    print_speedup("| OpenCV            / CUDA            |", 
+        elapsed_bf_sequential_cv_vec, elapsed_bf_parallel_vec);
+    print_speedup("| CUDA OpenCV       / CUDA            |", 
+        elapsed_bf_parallel_cv_vec, elapsed_bf_parallel_vec);
+    print_speedup("| OMP               / CUDA            |",
+        elapsed_bf_parallel_omp_vec, elapsed_bf_parallel_vec);
+#endif
 #endif
 }
