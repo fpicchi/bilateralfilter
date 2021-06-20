@@ -23,6 +23,47 @@ make -j8
 ./bilateral_filter
 ```
 
+## Implementation details
+
+### Sequential
+
+The sequential version has been provided by Mirco De Marchi, and it's the starting point from the other implementations.
+
+### OpenMP
+
+There were several points were it could've made sense to apply OpenMP directives.
+
+1. During the color weight initialization step
+2. During the gaussian space generation step
+3. During the filtering step
+
+After various benchmarks it turned out that it wasn't worth using OpenMP in the first 2 cases, as the loops were small enough that the overhead outweighted the benefits compared to a purely sequential approach.  
+So it was only applied to the third step, using a simple `#pragma omp parallel for` on the outer `for` loop.
+
+### CUDA Naive
+
+This was the first version made. Basically it parallelized the filtering step by creating a thread for each pixel (in blocks of 1024), each thread accessing the same global memory data.
+Even if GPUs have memory coalescing, it turned out to be not that much efficient as it had many global memory accesses (which are slow).
+
+The occupancy was 100%
+
+### CUDA (Shared)
+
+This second version uses shared memory and turned out to be quite fast, even if the occupancy is less than 100%.  
+
+The general idea is dividing the image in `K-squares NxN` and then create `K-CUDA` blocks which are composed of `(N+2*radius)x(N+2*radius)` threads.  
+Each thread in a block will load data (mainly pixels) in a shared memory chunk. Then only the most internal threads of the block will be used to actually calculate the new pixel values.
+
+The following picture simulates the block division by using a 25*25 image using 5x5 squares with a radius parameter of 1.
+
+<img src="sharedmem.png"></img>
+
+The size of the CUDA blocks are calculated in an automatic way. In most GPUs they'll be composed of 1024 threads (32x32).  
+Considering the previous formula, it means that to not waste too much resources one should avoid to have a big radius as parameter.
+
+In the benchmarks it was chosen a radius of 4 pixels, which means that for every CUDA block we were only calculating ((32-8) x (32-8)) effective pixel values = 576 pixels.  
+This means that **only `56.25%` of the threads in a CUDA block actually contributed to the final result**, while the other 43.75% were only used to load resources from the global memory to the shared memory.
+
 ## Benchmark Results
 
 This filter has been tried on 3 different devices.
@@ -104,10 +145,10 @@ And the GPU versions performed better than the CPU (parallel) ones. The speedup 
 
 ## Naive CUDA version
 
-The Naive CUDA version performs quite bad. It's slower than CPU OMP and about as fast as the Sequential version.
+The Naive CUDA version performs quite bad. It's slower than all other parallel versions and about as fast as the Sequential version.
 
 
 ## Notes
 
-In the benchmark the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden CUDA startup.  
-To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times changing the order of the pictures.
+Beware that sometimes the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden CUDA startup.  
+To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order of the pictures.
