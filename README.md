@@ -66,13 +66,12 @@ This means that **only `56.25%` of the threads in a CUDA block actually contribu
 
 ## Benchmark Results
 
-This filter has been tried on 3 different devices.
+This filter has been tried on 2 different devices.
 
 | ID | CPU          | GPU             |
 |----|--------------|-----------------|
 | A  | AMD FX-6350  | NVIDIA 1060 GTX |
 | B  | AMD R5-5600X | NVIDIA 3090 RTX |
-| C  | ????         | ?????           |
 
 On every computer this implementation of the Bilateral Filter turned out to be comparable with OpenCV's (when both ran in parallel mode).
 
@@ -82,7 +81,7 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 352 ms  | 84 ms        | 91 ms             |  23 ms   |  26 ms          |
 | B  | 121 ms  | 15 ms        | 13 ms             |  8 ms    |  7 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
+
 
 ### lenna.jpeg (361'200 pixels)
 
@@ -90,7 +89,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 50 ms   | 14 ms        | 17 ms             |  5 ms    |  5 ms           |
 | B  | 18 ms   | 9 ms         | 7 ms              |  1 ms    |  1 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### meadows.png (99'300 pixels)
 
@@ -98,7 +96,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 16 ms   | 6 ms         | 7 ms              |  3 ms    |  3 ms           |
 | B  | 5 ms    | 2 ms         | 3 ms              |  1 ms    |  1 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### mountain.jpg (114'072 pixels)
 
@@ -106,7 +103,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 21 ms   | 4 ms         | 5 ms              |  3 ms    |  3 ms           |
 | B  | 6 ms    | 2 ms         | 4 ms              |  1 ms    |  1 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### noir.png (111'000 pixels)
 
@@ -114,7 +110,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 19 ms   | 4 ms         | 4 ms              |  3 ms    |  4 ms           |
 | B  | 5 ms    | 2 ms         | 1 ms              |  1 ms    |  1 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### rosso.png (144'000 pixels)
 
@@ -122,7 +117,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 25 ms   | 6 ms         | 7 ms              |  3 ms    |  3 ms           |
 | B  | 7 ms    | 2 ms         | 3 ms              |  1 ms    |  2 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### rubik.png (230'337 pixels)
 
@@ -130,7 +124,6 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 39 ms   | 10 ms        | 8 ms              |  4 ms    |  3 ms           |
 | B  | 13 ms   | 2 ms         | 5 ms              |  2 ms    |  2 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 ### sky.png (132'300 pixels)
 
@@ -138,17 +131,15 @@ On every computer this implementation of the Bilateral Filter turned out to be c
 |----|---------|--------------|-------------------|----------|-----------------|
 | A  | 23 ms   | 5 ms         | 7 ms              |  3 ms    |  3 ms           |
 | B  | 7 ms    | 2 ms         | 3 ms              |  2 ms    |  1 ms           |
-| C  | ??????? | ????         | ?????             |          |                 |
 
 As expected, the parallel versions performed better than the sequential version.  
 And the GPU versions performed better than the CPU (parallel) ones. The speedup gets more noticeable with bigger images.
 
-## Naive CUDA version
-
-The Naive CUDA version performs quite bad. It's slower than all other parallel versions and about as fast as the Sequential version.
-
-
 ## Notes
 
-Beware that sometimes the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden CUDA startup.  
+Beware that *sometimes* the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden CUDA startup.  
 To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order of the pictures.
+
+### Naive CUDA version note
+
+The Naive CUDA version performed quite bad and so it wasn't included in the benchmark. It was slower than all other parallel versions and about as fast as the Sequential version.
