@@ -27,7 +27,8 @@ make -j8
 
 ### Sequential
 
-The sequential version has been provided by Mirco De Marchi, and it's the starting point from the other implementations.
+The sequential version has been provided by Mirco De Marchi, and it's the starting point of the other implementations.
+In particular, both the gaussian space generation and the `bf_sequential_apply()` function have remained essentially the same. 
 
 ### OpenMP
 
@@ -137,7 +138,7 @@ And the GPU versions performed better than the CPU (parallel) ones. The speedup 
 
 ## Notes
 
-Beware that *sometimes* the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden CUDA startup.  
+Beware that *sometimes* the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden startup hiccup.  
 To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order of the pictures.
 
 ### Naive CUDA version note
