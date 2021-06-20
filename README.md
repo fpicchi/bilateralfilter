@@ -138,8 +138,15 @@ And the GPU versions performed better than the CPU (parallel) ones. The speedup 
 
 ## Notes
 
+## Benchmark times
+
 Beware that *sometimes* the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden startup hiccup.  
-To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order of the pictures.
+To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order in which the pictures get processed.
+
+## OpenCV
+
+Please note that OpenCV runs in parallel even when not using the GPU unless compiled with a special flag.  
+This is the reason the CPU version of OpenCV is faster than the sequential implementation and about as fast as the OpenMP version.
 
 ### Naive CUDA version note
 
