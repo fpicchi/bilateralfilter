@@ -1,6 +1,6 @@
 /**
  * @file bf_cuda_cv.cpp
- * @author your name (you@domain.com)
+ * @author OpenCV
  * @brief CUDA-based OpenCV bilateral filter.
  * @date June 2021
  * 

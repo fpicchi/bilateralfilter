@@ -1,6 +1,6 @@
 /**
  * @file bf_cpu_cv.cpp
- * @author Mirco De Marchi
+ * @author OpenCV
  * @brief CPU-based OpenCV bilateral filter.
  * @date June 2021
  * 
