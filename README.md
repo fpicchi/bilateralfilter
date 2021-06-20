@@ -68,10 +68,10 @@ This means that **only `56.25%` of the threads in a CUDA block actually contribu
 
 This filter has been tried on 2 different devices.
 
-| ID | CPU          | GPU             |
-|----|--------------|-----------------|
-| A  | AMD FX-6350  | NVIDIA 1060 GTX |
-| B  | AMD R5-5600X | NVIDIA 3090 RTX |
+| ID | CPU          | GPU             | OS            |
+|----|--------------|-----------------|-------------- |
+| A  | AMD FX-6350  | NVIDIA 1060 GTX | Windows 8.1   |
+| B  | AMD R5-5600X | NVIDIA 3090 RTX | Ubuntu 20     |
 
 On every computer this implementation of the Bilateral Filter turned out to be comparable with OpenCV's (when both ran in parallel mode).
 
