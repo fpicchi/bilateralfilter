@@ -63,7 +63,7 @@ The size of the CUDA blocks are calculated in an automatic way. In most GPUs the
 Considering the previous formula, it means that to not waste too much resources one should avoid to have a big radius as parameter.
 
 In the benchmarks it was chosen a radius of 4 pixels, which means that for every CUDA block we were only calculating ((32-8) x (32-8)) effective pixel values = 576 pixels.  
-This means that **only `56.25%` of the threads in a CUDA block actually contributed to the final result**, while the other 43.75% were only used to load resources from the global memory to the shared memory.
+This means that **only `56.25%` of the threads in a CUDA block actually contributed to the final result**, while the other 43.75% were only used to load resources from the global memory into the shared memory.
 
 ## Benchmark Results
 
@@ -74,7 +74,8 @@ This filter has been tried on 2 different devices.
 | A  | AMD FX-6350  | NVIDIA 1060 GTX | Windows 8.1   |
 | B  | AMD R5-5600X | NVIDIA 3090 RTX | Ubuntu 20     |
 
-On every computer this implementation of the Bilateral Filter turned out to be comparable with OpenCV's (when both ran in parallel mode).
+On every computer the runtime of this implementation of the Bilateral Filter turned out to be comparable with OpenCV's (when both ran in parallel mode).  
+Also it produced the same picture as OpenCV (checked pixel by pixel) so even from a qualitative point of view we can say that this implementation is correct.
 
 ### cones.png (2'435'860 pixels)
 
