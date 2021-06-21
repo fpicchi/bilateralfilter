@@ -55,7 +55,7 @@ This second version uses shared memory and turned out to be quite fast, even if 
 The general idea is dividing the image in `K-squares NxN` and then create `K-CUDA` blocks which are composed of `(N+2*radius)x(N+2*radius)` threads.  
 Each thread in a block will load data (mainly pixels) in a shared memory chunk. Then only the most internal threads of the block will be used to actually calculate the new pixel values.
 
-The following picture simulates the block division by using a 25*25 image using 5x5 squares with a radius parameter of 1.
+The following picture simulates the CUDA block division of a 25*25 image using 5x5 squares with a radius parameter of 1 (so using CUDA blocks of 7x7 threads).
 
 <img src="sharedmem.png"></img>
 
