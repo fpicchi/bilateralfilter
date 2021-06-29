@@ -51,13 +51,18 @@ static cv::Mat test(const std::string info, const fs::path &fp,
     std::function<cv::Mat(const cv::Mat&, int, double, double)> cb,
     std::vector<float> &times)
 {
+    const size_t LOOPS = 100;
     std::cout << "[" << fp.filename() << "]" << info << std::endl;
     auto start = std::chrono::system_clock::now();
-    auto ret = cb(input_mat, param_diameter, 
-        param_sigma_i, param_sigma_s);
+    cv::Mat ret;
+    for (size_t i = 0; i < LOOPS; ++i)
+    {
+        ret = cb(input_mat, param_diameter, 
+            param_sigma_i, param_sigma_s);
+    }
     auto end = std::chrono::system_clock::now();
     float elapsed_time = std::chrono::duration<float, std::milli>(
-        end - start).count();
+        end - start).count() / static_cast<float>(LOOPS);
     times.push_back(elapsed_time);
     std::cout << "elapsed time: " << elapsed_time << " ms" << std::endl;
     return ret;
