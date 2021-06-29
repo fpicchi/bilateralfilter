@@ -65,9 +65,9 @@ Considering the previous formula, it means that to not waste too much resources 
 In the benchmarks it was chosen a radius of 4 pixels, which means that for every CUDA block we were only calculating ((32-8) x (32-8)) effective pixel values = 576 pixels.  
 This means that **only `56.25%` of the threads in a CUDA block actually contributed to the final result**, while the other 43.75% were only used to load resources from the global memory into the shared memory.
 
-## Benchmark Results
+## Benchmark Results (PC)
 
-This filter has been tried on 2 different devices.
+This filter has been tried on 2 different PCs.
 
 | ID | CPU          | GPU             | OS            |
 |----|--------------|-----------------|-------------- |
@@ -137,14 +137,74 @@ Also it produced the same picture as OpenCV (checked pixel by pixel) so even fro
 As expected, the parallel versions performed better than the sequential version.  
 And the GPU versions performed better than the CPU (parallel) ones. The speedup gets more noticeable with bigger images.
 
+## Benchmark Results (Jetson)
+
+### cones.png (2'435'860 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 452 ms  | 120 ms       | 109 ms            |  87 ms   |  20 ms          |
+| AGX XAVIER | 259 ms  | 39 ms        | 23 ms             |  39 ms   |  5 ms           |
+
+
+### lenna.jpeg (361'200 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 66 ms   | 17 ms        | 19 ms             |  13 ms   |  4 ms           |
+| AGX XAVIER | 39 ms   | 6 ms         | 4 ms              |  6 ms    |  1 ms           |
+
+### meadows.png (99'300 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 18 ms   | 5 ms         | 8 ms              |  5 ms    |  2 ms           |
+| AGX XAVIER | 11 ms   | 2 ms         | 2 ms              |  2 ms    |  1 ms           |
+
+### mountain.jpg (114'072 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 21 ms   | 6 ms         | 9 ms              |  5 ms    |  2 ms           |
+| AGX XAVIER | 12 ms   | 2 ms         | 4 ms              |  3 ms    |  1 ms           |
+
+### noir.png (111'000 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 20 ms   | 5 ms         | 10 ms             |  5 ms    |  2 ms           |
+| AGX XAVIER | 12 ms   | 2 ms         | 4 ms              |  2 ms    |  1 ms           |
+
+### rosso.png (144'000 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 27 ms   | 7 ms         | 12 ms             |  6 ms    |  2 ms           |
+| AGX XAVIER | 15 ms   | 3 ms         | 5 ms              |  3 ms    |  1 ms           |
+
+### rubik.png (230'337 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 42 ms   | 11 ms        | 10 ms             |  10 ms   |  3 ms           |
+| AGX XAVIER | 25 ms   | 4 ms         | 4 ms              |  4 ms    |  1 ms           |
+
+### sky.png (132'300 pixels)
+
+| Jetson     | CPU Seq | CPU OMP      | CPU OpenCV        |  CUDA    | CUDA OpenCV     |
+|------------|---------|--------------|-------------------|----------|-----------------|
+| TX2        | 25 ms   | 7 ms         | 11 ms             |  6 ms    |  2 ms           |
+| AGX XAVIER | 15 ms   | 3 ms         | 4 ms              |  4 ms    |  2 ms           |
+
+
 ## Notes
 
-## Benchmark times
+### Benchmark times
 
 Beware that *sometimes* the first images processed, regardless of the image, has distorted timings due to, probably, some kind of hidden startup hiccup.  
 To get valuable results (for both OpenCV and this implementation) it's advisable to run the benchmark multiple times while also changing the order in which the pictures get processed.
 
-## OpenCV
+### OpenCV
 
 Please note that OpenCV runs in parallel even when not using the GPU unless compiled with a special flag.  
 This is the reason the CPU version of OpenCV is faster than the sequential implementation and about as fast as the OpenMP version.
